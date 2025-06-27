@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 HTML_Template
+github
 
 
 # Editor directories and files
