@@ -1,13 +1,16 @@
 import { Navigate, Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import useAuth from "../hooks/useAuth";
+import ProfileProvider from "../providers/ProfileProvider";
 
 const PrivateRoute = () => {
   const { auth } = useAuth();
-  return auth?.user ? (
+  return auth?.authToken ? (
     <>
-      <Header />
-      <Outlet />
+      <ProfileProvider>
+        <Header />
+        <Outlet />
+      </ProfileProvider>
     </>
   ) : (
     <Navigate to="/login" />
