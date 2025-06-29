@@ -41,8 +41,12 @@ const Profile = () => {
   }
   return (
     <>
-      <ProfileInfo />
-      <MyPosts />
+      <main class="mx-auto max-w-[1020px] py-8">
+        <div class="container">
+          <ProfileInfo />
+          <MyPosts />
+        </div>
+      </main>
     </>
   );
 };

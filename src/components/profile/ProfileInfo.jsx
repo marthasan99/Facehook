@@ -8,7 +8,7 @@ const ProfileInfo = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center py-8 text-center">
+      <div className="flex flex-col items-center  py-8 text-center">
         <ProfileImage />
         <div>
           <h3 class="text-2xl font-semibold text-white lg:text-[28px]">
