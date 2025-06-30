@@ -40,7 +40,11 @@ const Home = () => {
 
   return (
     <>
-      <PostList posts={state.posts} />
+      <main className="mx-auto max-w-[1020px] py-8">
+        <div className="container">
+          <PostList posts={state.posts} />
+        </div>
+      </main>
     </>
   );
 };

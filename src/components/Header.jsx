@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import HomeImage from "../assets/icons/home.svg";
 import NotificationImage from "../assets/icons/notification.svg";
-import AvatarImage from "../assets/images/avatars/avatar_1.png";
+import AvatarImage from "../assets/icons/profile.svg";
 import LogoImage from "../assets/images/logo.svg";
 import Logout from "./auth/Logout";
 
@@ -13,6 +13,12 @@ const Header = () => {
   const { state } = useProfile();
 
   const user = state?.user ?? auth?.user;
+  console.log(`${user?.avatar}`);
+
+  const profileImage = user?.avatar
+    ? `${import.meta.env.VITE_SERVER_BASE_URL}/${user?.avatar}`
+    : AvatarImage;
+
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-[#3F3F3F] bg-[#1E1F24] py-4">
@@ -42,9 +48,7 @@ const Header = () => {
               </span>
               <img
                 className="max-h-[32px] max-w-[32px] lg:max-h-[44px] lg:max-w-[44px] rounded-full w-8 h-8"
-                src={`${import.meta.env.VITE_SERVER_BASE_URL}/${
-                  user?.avatar || AvatarImage
-                }`}
+                src={profileImage}
                 alt={user?.firstName + " " + user?.lastName}
               />
             </Link>

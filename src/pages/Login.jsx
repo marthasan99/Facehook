@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import AuthIllustration from "../assets/images/auth_illustration.png";
 import LoginForm from "../components/auth/LoginForm";
 
@@ -27,6 +28,17 @@ const Login = () => {
           {/* login form */}
           <LoginForm />
           {/* login form ends */}
+          <div className="py-4 lg:py-6">
+            <p className="text-center text-xs text-gray-600/95 lg:text-sm">
+              Don't have account?
+              <Link
+                className="text-white transition-all hover:text-lwsGreen hover:underline"
+                to="/register"
+              >
+                Create New
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>
