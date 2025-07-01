@@ -1,11 +1,12 @@
-import { useEffect, useReducer } from "react";
+import { useEffect } from "react";
 import { actions } from "../actions/index.js";
+import NewPost from "../components/posts/NewPost.jsx";
 import PostList from "../components/posts/PostsList.jsx";
 import useAxios from "../hooks/useAxios.js";
-import { PostReducer, initialState } from "../reducers/PostReducer.js";
+import usePost from "../hooks/usePost.js";
 
 const Home = () => {
-  const [state, dispatch] = useReducer(PostReducer, initialState);
+  const { state, dispatch } = usePost();
   const { api } = useAxios();
 
   useEffect(() => {
@@ -27,7 +28,15 @@ const Home = () => {
       }
     };
     fetchPosts();
-  }, [api]);
+  }, [api, dispatch]);
+
+  const sortedPosts =
+    state.posts?.sort((a, b) => {
+      return (
+        new Date(b.createAt || b.createdAt) -
+        new Date(a.createAt || a.createdAt)
+      );
+    }) || [];
 
   if (state.loading) {
     return <div className="">Fetching posts...</div>;
@@ -42,7 +51,8 @@ const Home = () => {
     <>
       <main className="mx-auto max-w-[1020px] py-8">
         <div className="container">
-          <PostList posts={state.posts} />
+          <NewPost />
+          <PostList posts={sortedPosts} />
         </div>
       </main>
     </>
