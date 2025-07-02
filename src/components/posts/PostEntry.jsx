@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { actions } from "../../actions";
 import AddPhotoIcon from "../../assets/icons/addPhoto.svg";
@@ -8,7 +8,7 @@ import usePost from "../../hooks/usePost.js";
 import useProfile from "../../hooks/useProfile.js";
 import Field from "../Field";
 
-const PostEntry = ({ onCreate }) => {
+const PostEntry = ({ onCreate, editPost = null }) => {
   const { auth } = useAuth();
   const { dispatch } = usePost();
   const { api } = useAxios();
@@ -16,6 +16,7 @@ const PostEntry = ({ onCreate }) => {
   const fileUploadRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const isEditing = !!editPost;
 
   const user = profile?.user ?? auth?.user;
 
@@ -24,7 +25,23 @@ const PostEntry = ({ onCreate }) => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm();
+
+  // Populate form with edit data when editPost changes
+  useEffect(() => {
+    if (editPost) {
+      setValue("content", editPost.content || editPost.body || "");
+
+      // If editing post has an image, show preview
+      if (editPost.image) {
+        const imageUrl = editPost.image.startsWith("http")
+          ? editPost.image
+          : `${import.meta.env.VITE_SERVER_BASE_URL}/${editPost.image}`;
+        setImagePreview(imageUrl);
+      }
+    }
+  }, [editPost, setValue]);
 
   // Handle image upload click - similar to ProfileImage
   const handleImageUploadClick = (e) => {
@@ -62,37 +79,48 @@ const PostEntry = ({ onCreate }) => {
 
     try {
       let response;
+      const apiUrl = isEditing
+        ? `${import.meta.env.VITE_SERVER_BASE_URL}/posts/${editPost.id}`
+        : `${import.meta.env.VITE_SERVER_BASE_URL}/posts`;
 
       if (selectedImage) {
-        // Create FormData for image upload - similar to ProfileImage
+        // Create FormData for image upload
         const postFormData = new FormData();
         postFormData.append("postType", "image");
-        postFormData.append("body", formData.content);
+        postFormData.append("content", formData.content);
         postFormData.append("image", selectedImage);
 
-        response = await api.post(
-          `${import.meta.env.VITE_SERVER_BASE_URL}/posts`,
-          postFormData
-        );
+        response = isEditing
+          ? await api.patch(apiUrl, postFormData)
+          : await api.post(apiUrl, postFormData);
       } else {
         // Send JSON for text-only posts
-        response = await api.post(
-          `${import.meta.env.VITE_SERVER_BASE_URL}/posts`,
-          {
-            postType: "text",
-            body: formData.content,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const postData = {
+          postType: imagePreview && !selectedImage ? "image" : "text",
+          content: formData.content,
+        };
+
+        // If editing and there's an existing image but no new image selected, keep the image
+        if (isEditing && editPost.image && !selectedImage) {
+          postData.postType = "image";
+          postData.image = editPost.image;
+        }
+
+        response = isEditing
+          ? await api.patch(apiUrl, postData, {
+              headers: { "Content-Type": "application/json" },
+            })
+          : await api.post(apiUrl, postData, {
+              headers: { "Content-Type": "application/json" },
+            });
       }
 
       if (response.status === 200 || response.status === 201) {
+        const actionType = isEditing
+          ? actions.post.POST_UPDATED
+          : actions.post.DATA_CREATED;
         dispatch({
-          type: actions.post.DATA_CREATED,
+          type: actionType,
           data: response.data,
         });
 
@@ -105,7 +133,10 @@ const PostEntry = ({ onCreate }) => {
         onCreate();
       }
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} post:`,
+        error
+      );
       console.error("Error response:", error.response?.data);
       dispatch({
         type: actions.post.DATA_FETCH_ERROR,
@@ -117,7 +148,7 @@ const PostEntry = ({ onCreate }) => {
   return (
     <div className="card relative">
       <h6 className="mb-3 text-center text-lg font-bold lg:text-xl">
-        Create Post
+        {isEditing ? "Edit Post" : "Create Post"}
       </h6>
       <form onSubmit={handleSubmit(handlePostSubmit)}>
         <div className="mb-3 flex items-center justify-between gap-2 lg:mb-6 lg:gap-4">
@@ -187,7 +218,7 @@ const PostEntry = ({ onCreate }) => {
             className="auth-input bg-lws-green font-bold text-deep-dark transition-all hover:opacity-90"
             type="submit"
           >
-            Post
+            {isEditing ? "Update Post" : "Post"}
           </button>
         </div>
       </form>

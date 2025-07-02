@@ -10,16 +10,20 @@ import useAxios from "../../hooks/useAxios";
 import usePost from "../../hooks/usePost";
 import { getDateDifferenceFromNow } from "../../utils";
 
-const PostHeader = ({ post }) => {
+const PostHeader = ({ post, onEdit }) => {
   const { avatarUrl } = useAvatar(post);
   const [showAction, setShowAction] = useState(false);
   const { dispatch } = usePost();
   const { api } = useAxios();
 
-  const handleActionToggle = (e) => {
+  const handleActionToggle = () => {
     setShowAction((prev) => !prev);
   };
-  const handleEditPost = () => {};
+
+  const handleEditPost = () => {
+    setShowAction(false); // Close action menu
+    onEdit?.(post); // Call parent component's edit handler
+  };
   const handleDeletePost = async (e) => {
     e.stopPropagation();
     try {
@@ -72,12 +76,8 @@ const PostHeader = ({ post }) => {
         {/* action dot */}
         <div className="relative">
           {isMe && (
-            <button>
-              <img
-                src={ThreeDotsIcon}
-                alt="3dots of Action"
-                onClick={handleActionToggle}
-              />
+            <button onClick={handleActionToggle}>
+              <img src={ThreeDotsIcon} alt="3dots of Action" />
             </button>
           )}
 
